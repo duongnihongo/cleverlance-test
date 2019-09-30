@@ -1,9 +1,6 @@
 package com.cleverlance.MyAirports.entity;
 
-import org.springframework.data.annotation.CreatedDate;
-
 import javax.persistence.*;
-import java.util.Date;
 
 @Entity
 @Table(name = "AIRPORT")
