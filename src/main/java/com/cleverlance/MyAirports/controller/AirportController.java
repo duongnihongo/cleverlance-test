@@ -16,7 +16,7 @@ public class AirportController {
 
     @GetMapping(value = "/myAirports")
     public ResponseObject myAirports(@RequestParam(name = "apiKey") String apiKey) {
-        return airportService.MyAirports(apiKey);
+        return airportService.myAirports(apiKey);
     }
 
     @GetMapping(value = "/getAirportByCode")

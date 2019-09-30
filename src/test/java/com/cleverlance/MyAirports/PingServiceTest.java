@@ -3,6 +3,7 @@ package com.cleverlance.MyAirports;
 import com.cleverlance.MyAirports.entity.Airport;
 import com.cleverlance.MyAirports.repository.AirportRepository;
 import com.cleverlance.MyAirports.service.PingService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -28,25 +29,29 @@ public class PingServiceTest {
     @Autowired
     PingService pingService;
 
-    @Test
-    public void successShouldLogSuccessMessages() {
-        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(outContent));
-        // Setup
+    @Before
+    public void setupMock() {
         List<Airport> airportList = new ArrayList<>();
         airportList.add(new Airport("AT1", "Airport Test 01"));
         airportList.add(new Airport("AT2", "Airport Test 02"));
-
-        // Test
-        // Case 1: Valid return
         Mockito.when(airportRepository.findAll()).thenReturn(airportList);
+    }
+
+    @Test
+    public void testPingService_whenHaveAirports_thenLogToConsole() {
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
         pingService.printOutAllAirports();
         assertTrue(outContent.toString().contains("Airport Test 01"));
-        outContent.reset();
-        // Case 2: Return null
+        assertTrue(outContent.toString().contains("Airport Test 02"));
+    }
+
+    @Test
+    public void testPingService_whenNoAirport_thenDoNotPrintOut() {
         Mockito.when(airportRepository.findAll()).thenReturn(null);
+        ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(outContent));
         pingService.printOutAllAirports();
         assertEquals("", outContent.toString());
     }
-
 }

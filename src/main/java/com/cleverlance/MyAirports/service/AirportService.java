@@ -1,14 +1,19 @@
 package com.cleverlance.MyAirports.service;
 
 import com.cleverlance.MyAirports.DTO.ResponseObject;
-import com.cleverlance.MyAirports.entity.Airport;
-
-import java.util.List;
 
 public interface AirportService {
-    ResponseObject MyAirports(String apiKey);
+    /** Service to receive response data from Airlabs.co API and save them to Database
+     *
+     * @param apiKey
+     * @return Response Object
+     */
+    ResponseObject myAirports(String apiKey);
 
+    /** Service to get specific Airport from Database by its code
+     *
+     * @param code
+     * @return Response Object
+     */
     ResponseObject getAirportByCode(String code);
-
-    List<Airport> getListAirportsFromClientService(String apiKey);
 }

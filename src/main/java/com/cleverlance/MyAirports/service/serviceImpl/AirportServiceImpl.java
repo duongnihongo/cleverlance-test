@@ -6,8 +6,8 @@ import com.cleverlance.MyAirports.common.CommonMethods;
 import com.cleverlance.MyAirports.common.Messages;
 import com.cleverlance.MyAirports.entity.Airport;
 import com.cleverlance.MyAirports.repository.AirportRepository;
+import com.cleverlance.MyAirports.service.AirlabsService;
 import com.cleverlance.MyAirports.service.AirportService;
-import com.cleverlance.MyAirports.util.UrlConstants;
 import com.cleverlance.MyAirports.util.Utils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,9 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,12 +40,16 @@ public class AirportServiceImpl implements AirportService {
     @Autowired
     Messages messages;
 
+    @Autowired
+    AirlabsService airlabsService;
+
     @Override
-    public ResponseObject MyAirports(String apiKey) {
+    public ResponseObject myAirports(String apiKey) {
         if (apiKey == null || apiKey.isEmpty()) {
             return commonMethods.responseObjectBuilder(Utils.ResponseCode.FAIL.getValue(), messages.get("request.responseCode.error"), null);
         } else {
-            List<Airport> airportList = getListAirportsFromClientService(apiKey);
+            String airlabsResponse = airlabsService.getListAirportsFromClientService(apiKey);
+            List<Airport> airportList = parseAirlabsResponseStringToAirportList(airlabsResponse);
             if (!airportList.isEmpty()) {
                 airportRepository.saveAll(airportList);
                 return commonMethods.responseObjectBuilder(Utils.ResponseCode.SUCCESS.getValue(), messages.get("request.responseCode.success"), airportList);
@@ -55,6 +57,21 @@ public class AirportServiceImpl implements AirportService {
                 return commonMethods.responseObjectBuilder(Utils.ResponseCode.EMPTY.getValue(), messages.get("request.responseCode.empty"), airportList);
             }
         }
+    }
+
+    private List<Airport> parseAirlabsResponseStringToAirportList(String airlabsResponse) {
+        List<Airport> airportList = new ArrayList<>();
+        try {
+            JsonNode jsonNode = objectMapper.readTree(airlabsResponse);
+            if (!airlabsResponse.contains("error")) {
+                String responseList = jsonNode.get("response").toString();
+                airportList = objectMapper.readValue(responseList, new TypeReference<List<Airport>>() {
+                });
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
+        return airportList;
     }
 
     @Override
@@ -70,26 +87,5 @@ public class AirportServiceImpl implements AirportService {
                 return commonMethods.responseObjectBuilder(Utils.ResponseCode.EMPTY.getValue(), messages.get("request.responseCode.empty"), null);
             }
         }
-    }
-
-    @Override
-    public List<Airport> getListAirportsFromClientService(String apiKey) {
-        List<Airport> airportList = new ArrayList<>();
-        try {
-            if (apiKey != null && !apiKey.isEmpty()) {
-                String uri = UrlConstants.AIRPORT_GET_ALL_URL + apiKey;
-
-                RestTemplate restTemplate = new RestTemplate();
-                String result = restTemplate.getForObject(uri, String.class);
-
-                JsonNode jsonNode = objectMapper.readTree(result);
-                String responseList = jsonNode.get("response").toString();
-
-                airportList = objectMapper.readValue(responseList, new TypeReference<List<Airport>>() {});
-            }
-        } catch (Exception e) {
-            logger.error(e);
-        }
-        return airportList;
     }
 }
