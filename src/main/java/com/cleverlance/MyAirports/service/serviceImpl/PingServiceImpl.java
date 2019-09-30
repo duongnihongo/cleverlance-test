@@ -30,9 +30,11 @@ public class PingServiceImpl implements PingService {
     @Override
     public ResponseObject printOutAllAirports() {
         List<Airport> airportList = airportRepository.findAll();
-        if (!airportList.isEmpty()) {
-            logger.info(airportList.toString());
+        if (airportList != null && !airportList.isEmpty()) {
+            logger.info("Airport List: \n" + airportList.toString());
+            return commonMethods.responseObjectBuilder(Utils.ResponseCode.SUCCESS.getValue(), messages.get("request.responseCode.success"), airportList.size());
+        } else {
+            return commonMethods.responseObjectBuilder(Utils.ResponseCode.FAIL.getValue(), messages.get("request.responseCode.error"), null);
         }
-        return commonMethods.responseObjectBuilder(Utils.ResponseCode.SUCCESS.getValue(), messages.get("request.responseCode.success"), airportList.size());
     }
 }

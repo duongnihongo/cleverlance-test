@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -28,16 +29,13 @@ public class AirportServiceTest {
     @MockBean
     AirportRepository airportRepository;
 
-    @MockBean
-    AirportService airportServiceMock;
-
     @Autowired
     CommonConfig commonConfig;
 
     @Test
     public void testGetAirportByCode() {
         //Setup
-        ResponseObject found;
+        ResponseObject found = new ResponseObject();
         Mockito.when(airportRepository.getAirportByCode("CDG")).thenReturn(new Airport("CDG", "Charles De Gaulle"));
 
         // Test
@@ -58,7 +56,7 @@ public class AirportServiceTest {
     @Test
     public void testMyAirports() {
         // Setup
-        ResponseObject found;
+        ResponseObject found = new ResponseObject();
         String apiKey = commonConfig.getApiKey();
 
         // Test
@@ -77,7 +75,7 @@ public class AirportServiceTest {
     @Test
     public void testGetListAirportsFromClientService() {
         // Setup
-        List<Airport> airportList;
+        List<Airport> airportList = new ArrayList<>();
         String apiKey = commonConfig.getApiKey();
         // Test
         // Case 1: Empty apiKey
@@ -88,18 +86,5 @@ public class AirportServiceTest {
         // Case 2: Valid apiKey
         airportList = airportService.getListAirportsFromClientService(apiKey);
         assertTrue(airportList.size() > 0);
-
-    }
-
-    @Test(expected = Exception.class)
-    public void testGetListAirportsFromClientService_thenThrowException() {
-        // Setup
-        String apiKey = commonConfig.getApiKey();
-        Mockito
-                .when(airportServiceMock.getListAirportsFromClientService(apiKey))
-                .thenThrow(Exception.class);
-
-        // Test
-        airportServiceMock.getListAirportsFromClientService(apiKey);
     }
 }
