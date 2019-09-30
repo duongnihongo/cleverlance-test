@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class AirportServiceImpl implements AirportService {
     Messages messages;
 
     @Override
-    public ResponseObject myAirports(String apiKey) {
+    public ResponseObject MyAirports(String apiKey) {
         if (apiKey == null || apiKey.isEmpty()) {
             return commonMethods.responseObjectBuilder(Utils.ResponseCode.FAIL.getValue(), messages.get("request.responseCode.error"), null);
         } else {
@@ -71,19 +72,21 @@ public class AirportServiceImpl implements AirportService {
         }
     }
 
-    private List<Airport> getListAirportsFromClientService(String apiKey) {
+    @Override
+    public List<Airport> getListAirportsFromClientService(String apiKey) {
         List<Airport> airportList = new ArrayList<>();
         try {
-            String uri = UrlConstants.AIRPORT_GET_ALL_URL + apiKey;
+            if (apiKey != null && !apiKey.isEmpty()) {
+                String uri = UrlConstants.AIRPORT_GET_ALL_URL + apiKey;
 
-            RestTemplate restTemplate = new RestTemplate();
-            String result = restTemplate.getForObject(uri, String.class);
+                RestTemplate restTemplate = new RestTemplate();
+                String result = restTemplate.getForObject(uri, String.class);
 
-            JsonNode jsonNode = objectMapper.readTree(result);
-            String responseList = jsonNode.get("response").toString();
+                JsonNode jsonNode = objectMapper.readTree(result);
+                String responseList = jsonNode.get("response").toString();
 
-            airportList = objectMapper.readValue(responseList, new TypeReference<List<Airport>>() {
-            });
+                airportList = objectMapper.readValue(responseList, new TypeReference<List<Airport>>() {});
+            }
         } catch (Exception e) {
             logger.error(e);
         }
